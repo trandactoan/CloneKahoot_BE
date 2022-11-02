@@ -8,13 +8,19 @@ router.get('/', function(req, res, next) {
   res.send(User.find());
 });
 
+// GET user by id
+router.get('/id', async function(req,res,next) {
+  const user=await User.findOne({_id: req.query._id});
+  res.status('200').send(user)
+})
+
+
 // POST users register form
 router.post('/register', async function(req,res,next) {
   const email=req.body.email;
   const username=req.body.username;
   const password=req.body.password;
   const test=await User.findOne({email: email});
-  console.log("This is the result of test: ", test);
   if(test)
   {
     res.status('500').send('The email aldready exist');
@@ -31,6 +37,22 @@ router.post('/register', async function(req,res,next) {
     res.status('200').send(user);
   }catch(error){
     res.status('500').send(error);
+  }
+})
+
+//POST users login form
+router.post('/login', async function(req,res,next) {
+  const userData = req.body;
+  const user = await User.findOne({ email: userData.email });
+  if (user) {
+    const checkPassword = await bcrypt.compare(userData.password, user.password);
+    if (checkPassword) {
+      res.status(200).json(user);
+    } else {
+      res.status(400).json({ error: "Invalid Password" });
+    }
+  } else {
+    res.status(400).json({ error: "User does not exist" });
   }
 })
 
